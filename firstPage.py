@@ -6,7 +6,7 @@ import pathlib
 # Colores
 FIRST_COLOR = f'#E7E7E7 on #041B2D'
 SECOND_COLOR = '#041B2D on #9B9B9B '
-sg.set_options(element_padding=(1, 2))
+sg.set_options(element_padding=(2, 10))
 
 # Menu bar
 menu_def = [
@@ -45,8 +45,8 @@ one = [
 mid_col = [
 
     [sg.Text("import image:")],
-    [sg.Text(size=(40, 1), key="-TOUT-")],
-    [sg.Image(key="-IMAGE-")],
+    [sg.Image(key="-IMAGE-")]
+    
 ]
 
 #Make Histo Grame######################################
@@ -56,14 +56,14 @@ mid_col = [
 
 # layout to put elements on window
 layout = [
-    [sg.MenubarCustom(menu_def, tearoff=False)],
+    # , tearoff=False
+    [sg.MenubarCustom(menu_def)],
     [sg.Column(left_col, key='-left-'), sg.Column(mid_col, key='-mid-')],
     [sg.Column(filter_buttons, key='-filter-'), sg.Column(one, visible=False, key='-GrayScale-')]
 ]
 
 # Display Window
-window = sg.Window('Window Title', layout, margins=(
-    0, 0), resizable=True, return_keyboard_events=True, finalize=True)
+window = sg.Window('Window Title', layout, margins=(0, 0), resizable=True, return_keyboard_events=True, finalize=True)
 window.maximize()
 
 
@@ -79,7 +79,7 @@ while True:
     if event in ['filter', 'GrayScale']:
         window[f'-{active}-'].update(visible=False)
         active = event
-        print(active)
+        
         window[f'-{active}-'].update(visible=True)
     if event in ('Open (Ctrl+O)', 'o:79'):
         file = open_file()

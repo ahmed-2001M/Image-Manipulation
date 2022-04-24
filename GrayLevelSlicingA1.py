@@ -5,7 +5,7 @@ import cv2 as cv
 from PIL import Image
 
 #function name :
-def GrayLevelSlicingA1(original):
+def A1(original):
 
     max=255
     min=150

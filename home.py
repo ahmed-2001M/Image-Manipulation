@@ -11,6 +11,7 @@ from PIL import Image
 from io import BytesIO 
 from threshold import Threshold
 from ArithmaticOperationAdd import Addition
+from ArithmaticOperationSubtract import Subtraction
 
 # Colores
 FIRST_COLOR = f'#E7E7E7 on #041B2D'
@@ -54,7 +55,7 @@ down_col = sg.Frame('actions',[
         [sg.Text('bytes'), sg.Slider(range = (1,8),orientation = 'h', enable_events=True, disable_number_display=True , key = '-BYTES-', pad = (5,0))]
     ]),sg.Column([
         [sg.Checkbox('Gray Scale', key = '-GRAY-', pad = (0,0)), sg.Checkbox('Negative Image', key = '-NEGATIVEIMAGE-', pad = (0,0)), sg.Checkbox('Contrast Stretching', key = '-CONTRAST-', pad = (0,0)), sg.Checkbox('Power Low', key = '-POWERLOW-', pad = (0,0))],
-        [sg.Checkbox('Log Transform', key = '-LOG-', pad = (0,0)), sg.Checkbox('Inverse Log', key = '-INVERSELOG-' , pad = (0,0)), sg.Checkbox('threshold', key = '-THRESHOLD-', pad = (0,0)), sg.Checkbox('Add Constant', key = '-ADD-', pad = (0,0))],
+        [sg.Checkbox('Log Transform', key = '-LOG-', pad = (0,0)), sg.Checkbox('Inverse Log', key = '-INVERSELOG-' , pad = (0,0)), sg.Checkbox('threshold', key = '-THRESHOLD-', pad = (0,0)), sg.Checkbox('Add Constant', key = '-ADD-', pad = (0,0)), sg.Checkbox('Subtract Constant', key = '-SUBTRACT-', pad = (0,0))],
 
         
     ])],
@@ -82,7 +83,7 @@ window = sg.Window('Window Title', layout, margins=(0, 0), resizable=False, retu
 # window.maximize()
 
 # update_image(original , window['-BYTES-'], window['-GRAY-'], window['-NEGATIVEIMAGE-'], window['-LOG-'], window['-INVERSELOG-'])
-def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,add):
+def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,add,subtract):
 
     global image
     image = original
@@ -93,6 +94,8 @@ def update_image(original ,bytes , gray , negativeimage , log , negativelog,thre
         image = Threshold(image)
     if add :
         image = Addition(image)
+    if subtract :
+        image = Subtraction(image)
 
     bio = BytesIO()
     image.save(bio, format = 'PNG')
@@ -133,7 +136,8 @@ while True:
                      values['-LOG-'], 
                      values['-INVERSELOG-'],
                      values['-THRESHOLD-'],
-                     values['-ADD-']
+                     values['-ADD-'],
+                     values['-SUBTRACT-']
                     )
         
 window.close()

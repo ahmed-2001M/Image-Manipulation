@@ -32,7 +32,7 @@ def gray_scale3d(original,byets = 1) :
     
     for i in range(len(nd_array)-1) :
         for j in range(len(nd_array[0])-1) :
-            pixel=nd_array[i,j,2]
+            pixel=nd_array[i,j,0]
             pixel = pixel % (2**byets)
             temp[i,j]=pixel,pixel,pixel
             

@@ -35,4 +35,4 @@ def Subtraction(original):
 
             img[i,j] = pixel
 
-        return (img)
+    return Image.fromarray(img)

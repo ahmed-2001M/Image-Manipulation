@@ -1,6 +1,7 @@
 
 from inspect import stack
 from matplotlib.pyplot import margins
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 from numpy import asarray, average
 from numpy import pad, size
@@ -14,6 +15,10 @@ from threshold import Threshold
 from ArithmaticOperationAdd import Addition
 from ArithmaticOperationSubtract import Subtraction
 from average_filter import Avg_filter
+import histograme
+import matplotlib as plt
+from GrayLevelSlicingA1 import A1
+from GrayLevelSlicingA2 import A2
 
 # Colores
 FIRST_COLOR = f'#E7E7E7 on #041B2D'
@@ -61,6 +66,14 @@ down_col = sg.Frame('actions',[
         [sg.Slider(range = (1,255,20),orientation = 'h', enable_events=True, disable_number_display=True , key = '-SADITION-', pad = (0,0)),
          sg.Slider(range = (1,255),orientation = 'h', enable_events=True, disable_number_display=True , key = '-SSUBTRACTION-', pad = (5,0)),]
     ]),sg.Column([
+        [sg.Checkbox('Gray Scale Slicing 1', key = '-GRAY1-', pad = (0,10)),],
+        [sg.Checkbox('Gray Scale Slicing 2', key = '-GRAY2-', pad = (0,10)),]
+        ]),sg.Column([
+            [sg.Input(key = '-min1-', size = (5,3),pad = (0,5)),sg.Text('min')],
+            [sg.Input(key = '-max1-', size = (5,3)),sg.Text('max')],
+            [sg.Input(key = '-min2-', size = (5,3),pad = (0,5)),sg.Text('min')],
+            [sg.Input(key = '-max2-', size = (5,3)),sg.Text('max')],
+            ]),sg.Column([
         [sg.Checkbox('Negative Image', key = '-NEGATIVEIMAGE-', pad = (0,0)), sg.Checkbox('Contrast Stretching', key = '-CONTRAST-', pad = (0,0)), sg.Checkbox('Power Low', key = '-POWERLOW-', pad = (0,0)), ],
         [sg.Checkbox('Log Transform', key = '-LOG-', pad = (0,0)), sg.Checkbox('Inverse Log', key = '-INVERSELOG-' , pad = (0,0)), sg.Button('LOAD', key = '-LOAD-' , pad = (0,0))],
 
@@ -102,7 +115,7 @@ histo_col = sg.Column([
 # layout to put elements on window
 layout = [
     [sg.MenubarCustom(menu_def)],
-    [left_col,mid_col,histo_col],
+    [left_col,mid_col,sg.Canvas(key='-CANVAS-')],
     [down_col],
     [filter_col]
     
@@ -113,7 +126,7 @@ window = sg.Window('Window Title', layout, margins=(0, 0), resizable=False, retu
 # window.maximize()
 
 # update_image(original , window['-BYTES-'], window['-GRAY-'], window['-NEGATIVEIMAGE-'], window['-LOG-'], window['-INVERSELOG-'])
-def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,sthreshold,add,sadition,subtract,ssubtraction,averageFilter):
+def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,sthreshold,add,sadition,subtract,ssubtraction,averageFilter,gray1,gray2,min1,max1,min2,max2):
     
 
     global image
@@ -129,6 +142,11 @@ def update_image(original ,bytes , gray , negativeimage , log , negativelog,thre
         Subtraction(image,ssubtraction)
     if averageFilter :
         Avg_filter(image)
+    if gray1 and min1 and max1 :
+        A1(image,int(min1),int(max1))
+    if gray2 and min2 and max2 :
+        A2(image,int(min2),int(max2))
+        
     
         
     res = Image.fromarray(image)
@@ -140,6 +158,16 @@ def update_image(original ,bytes , gray , negativeimage , log , negativelog,thre
         bio = BytesIO()
         original.save(bio, format = 'PNG')
         window['-IMAGE-'].update(data = bio.getvalue())
+
+        
+plt.use('TkAgg')
+def draw_figure(canvas, figure):
+    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas)
+    figure_canvas_agg.draw()
+    figure_canvas_agg.get_tk_widget().pack(side='top', fill='both', expand=1)
+    return figure_canvas_agg
+        
+        
 
 
 active = 'Filter'  # To Save Active Button
@@ -159,6 +187,10 @@ while True:
         bio = BytesIO()
         original.save(bio, format = 'PNG')
         window["-IMAGE-"].update(data = bio.getvalue())
+        # print(file)
+        # if file :
+        #     fig = histograme.draw_histo_RGP(file)
+        #     draw_figure(window['-CANVAS-'].TKCanvas, fig)
     if event == 'Contrast' :
         window[f'-{active}-'].update(visible=False) 
         active = 'Contrast'
@@ -183,8 +215,21 @@ while True:
                      values['-SADITION-'],
                      values['-SUBTRACTION-'],
                      values['-SSUBTRACTION-'],
-                     values['-AVERAGEFILTER-']
+                     values['-AVERAGEFILTER-'],
+                     values['-GRAY1-'],
+                     values['-GRAY2-'],
+                     values['-min1-'],
+                     values['-max1-'],
+                     values['-min2-'],
+                     values['-max2-'],
+                     
                     )
 
         
 window.close()
+
+
+
+
+
+

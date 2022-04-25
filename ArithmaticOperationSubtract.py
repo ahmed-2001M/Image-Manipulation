@@ -1,38 +1,31 @@
-import cv2 as cv
-from matplotlib import pyplot as plt
-from PIL import Image
-from numpy import asarray
 
 #function name :
 # def ArithmaticOperationSubtract(original):
-def Subtraction(original):
-    img= asarray(original)
+def Subtraction(original,constant = 0):
+
     # the first for loob which catch the row:
-    s=70
-    for i in range (len(img)):
+    for i in range (len(original)):
         
         # the second for loob which catch the column:
-        for j in range (len(img[0])):
+        for j in range (len(original[0])):
             
             #we put the current point matrix in a varible:
-            pixel = img[i,j]
+            pixel = original[i,j]
             
             #Adding a constant :
-            if pixel[0]>s :
-                pixel[0] =pixel [0] - s
+            if pixel[0]>constant :
+                pixel[0] =pixel [0] - constant
             else :
                 pixel[0]=0
             
-            if pixel[1]>s :
-                pixel [1]=pixel [1] - s
+            if pixel[1]>constant :
+                pixel [1]=pixel [1] - constant
             else :
                 pixel[1]=0
             
-            if pixel[2]>s :
-                pixel[2] =pixel [2] - s
+            if pixel[2]>constant :
+                pixel[2] =pixel [2] - constant
             else :
                 pixel[2]=0
 
-            img[i,j] = pixel
-
-    return Image.fromarray(img)
+            original[i,j] = pixel

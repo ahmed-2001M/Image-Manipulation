@@ -1,7 +1,8 @@
 
+from inspect import stack
 from matplotlib.pyplot import margins
 import numpy as np
-from numpy import asarray
+from numpy import asarray, average
 from numpy import pad, size
 import PySimpleGUI as sg
 import os
@@ -12,6 +13,7 @@ from io import BytesIO
 from threshold import Threshold
 from ArithmaticOperationAdd import Addition
 from ArithmaticOperationSubtract import Subtraction
+from average_filter import Avg_filter
 
 # Colores
 FIRST_COLOR = f'#E7E7E7 on #041B2D'
@@ -37,7 +39,7 @@ left_col = sg.Column([
     [sg.B('Contrast', size=(20, 1), button_color=SECOND_COLOR, pad = (3,3))],
     [sg.B('difference', size=(20, 1), button_color=SECOND_COLOR, pad = (3,3))],
     [sg.B('Contrast Stretching', size=(20, 1), button_color=SECOND_COLOR, pad = (3,3))],
-    [sg.B('filter', size=(20, 1), button_color=SECOND_COLOR, pad = (3,3))]
+    [sg.B('Filter', size=(20, 1), button_color=SECOND_COLOR, pad = (3,3))]
 
 ])
 
@@ -52,15 +54,42 @@ mid_col = sg.Column([
 # column for changable buttons
 down_col = sg.Frame('actions',[
     [sg.Column([
-        [sg.Text('bytes'), sg.Slider(range = (1,8),orientation = 'h', enable_events=True, disable_number_display=True , key = '-BYTES-', pad = (5,0))]
+        [sg.Checkbox('Gray Scale', key = '-GRAY-', pad = (0,0)),sg.Checkbox('threshold', key = '-THRESHOLD-', pad = (90,0)),],
+        [sg.Slider(range = (1,8),orientation = 'h', enable_events=True, disable_number_display=True , key = '-BYTES-', pad = (0,0)),
+         sg.Slider(range = (1,255),orientation = 'h', enable_events=True, disable_number_display=True , key = '-STHRESHOLD-', pad = (5,0)),],
+        [sg.Checkbox('Add Constant', key = '-ADITION-', pad = (0,0)),  sg.Checkbox('Subtract Constant', key = '-SUBTRACTION-', pad = (75,0))],
+        [sg.Slider(range = (1,255,20),orientation = 'h', enable_events=True, disable_number_display=True , key = '-SADITION-', pad = (0,0)),
+         sg.Slider(range = (1,255),orientation = 'h', enable_events=True, disable_number_display=True , key = '-SSUBTRACTION-', pad = (5,0)),]
     ]),sg.Column([
-        [sg.Checkbox('Gray Scale', key = '-GRAY-', pad = (0,0)), sg.Checkbox('Negative Image', key = '-NEGATIVEIMAGE-', pad = (0,0)), sg.Checkbox('Contrast Stretching', key = '-CONTRAST-', pad = (0,0)), sg.Checkbox('Power Low', key = '-POWERLOW-', pad = (0,0))],
-        [sg.Checkbox('Log Transform', key = '-LOG-', pad = (0,0)), sg.Checkbox('Inverse Log', key = '-INVERSELOG-' , pad = (0,0)), sg.Checkbox('threshold', key = '-THRESHOLD-', pad = (0,0)), sg.Checkbox('Add Constant', key = '-ADD-', pad = (0,0)), sg.Checkbox('Subtract Constant', key = '-SUBTRACT-', pad = (0,0))],
+        [sg.Checkbox('Negative Image', key = '-NEGATIVEIMAGE-', pad = (0,0)), sg.Checkbox('Contrast Stretching', key = '-CONTRAST-', pad = (0,0)), sg.Checkbox('Power Low', key = '-POWERLOW-', pad = (0,0)), ],
+        [sg.Checkbox('Log Transform', key = '-LOG-', pad = (0,0)), sg.Checkbox('Inverse Log', key = '-INVERSELOG-' , pad = (0,0)), sg.Button('LOAD', key = '-LOAD-' , pad = (0,0))],
 
         
     ])],
 
 ], visible = False, key = '-Contrast-',pad = (20,0))
+# down_col = sg.Frame('actions',[
+#     [sg.Column([
+#         [sg.Checkbox('Gray Scale', key = '-GRAY-', pad = (0,0)),sg.Checkbox('threshold', key = '-THRESHOLD-', pad = (90,0)),],
+#         [sg.Slider(range = (1,8),orientation = 'h', enable_events=True, disable_number_display=True , key = '-BYTES-', pad = (0,0)),
+#          sg.Slider(range = (1,255),orientation = 'h', enable_events=True, disable_number_display=True , key = '-STHRESHOLD-', pad = (5,0)),],
+#         [sg.Checkbox('Add Constant', key = '-ADITION-', pad = (0,0)),sg.InputText(key='-SADITION-',size=(5,3)),  sg.Checkbox('Subtract Constant', key = '-SUBTRACTION-', pad = (5,0)),sg.InputText(key='-SSUBTRACTION-',size=(5,3))]
+#     ]),sg.Column([
+#         [sg.Checkbox('Negative Image', key = '-NEGATIVEIMAGE-', pad = (0,0)), sg.Checkbox('Contrast Stretching', key = '-CONTRAST-', pad = (0,0)), sg.Checkbox('Power Low', key = '-POWERLOW-', pad = (0,0)), ],
+#         [sg.Checkbox('Log Transform', key = '-LOG-', pad = (0,0)), sg.Checkbox('Inverse Log', key = '-INVERSELOG-' , pad = (0,0)), sg.Button('Load', key = '-LOAD-' , pad = (0,0))],
+
+        
+#     ])],
+
+# ], visible = False, key = '-Contrast-',pad = (20,0))
+
+#filter column 
+filter_col = sg.Frame('action',[
+    [sg.Column([
+        [sg.Checkbox('Average Filter', key = '-AVERAGEFILTER-', pad = (0,0) )],
+        [sg.Button('LOAD', key = '-LOAD1-' , pad = (0,0))]
+    ])]
+], visible = False, key = '-Filter-',pad = (20,0))
 
 #Make Histo Grame######################################
 histo_col = sg.Column([
@@ -74,7 +103,8 @@ histo_col = sg.Column([
 layout = [
     [sg.MenubarCustom(menu_def)],
     [left_col,mid_col,histo_col],
-    [down_col]
+    [down_col],
+    [filter_col]
     
 ]
 
@@ -83,22 +113,27 @@ window = sg.Window('Window Title', layout, margins=(0, 0), resizable=False, retu
 # window.maximize()
 
 # update_image(original , window['-BYTES-'], window['-GRAY-'], window['-NEGATIVEIMAGE-'], window['-LOG-'], window['-INVERSELOG-'])
-def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,add,subtract):
+def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,sthreshold,add,sadition,subtract,ssubtraction,averageFilter):
+    
 
     global image
-    image = original
+    image = asarray(original)
 
     if gray :
-        image = gray_scale3d(image,bytes)
-    if threshold :
-        image = Threshold(image)
-    if add :
-        image = Addition(image)
-    if subtract :
-        image = Subtraction(image)
-
+        gray_scale3d(image,bytes)
+    if threshold:
+        Threshold(image,int(sthreshold))
+    if add:
+        Addition(image,int(sadition))
+    if subtract and ssubtraction !='':
+        Subtraction(image,ssubtraction)
+    if averageFilter :
+        Avg_filter(image)
+    
+        
+    res = Image.fromarray(image)
     bio = BytesIO()
-    image.save(bio, format = 'PNG')
+    res.save(bio, format = 'PNG')
     if [gray,threshold] :
         window['-IMAGE-'].update(data = bio.getvalue())
     else :
@@ -107,11 +142,12 @@ def update_image(original ,bytes , gray , negativeimage , log , negativelog,thre
         window['-IMAGE-'].update(data = bio.getvalue())
 
 
-active = 'filter'  # To Save Active Button
+active = 'Filter'  # To Save Active Button
 
 # running loop
 while True:
-    event, values = window.read(timeout = 50)
+    event, values = window.read()
+    print(event)
     # print(event, values)
     if event in (None, 'Exit'):
         break
@@ -124,10 +160,16 @@ while True:
         original.save(bio, format = 'PNG')
         window["-IMAGE-"].update(data = bio.getvalue())
     if event == 'Contrast' :
+        window[f'-{active}-'].update(visible=False) 
         active = 'Contrast'
         window[f'-{active}-'].update(visible=True)  
     
-    if (active == 'Contrast' and file):
+    if event == 'Filter' :
+        window[f'-{active}-'].update(visible=False)  
+        active = 'Filter'
+        window[f'-{active}-'].update(visible=True)  
+    
+    if (event in['-LOAD-','-LOAD1-'] and file):
         # print(original)
         update_image(original,
                      values['-BYTES-'],
@@ -136,8 +178,13 @@ while True:
                      values['-LOG-'], 
                      values['-INVERSELOG-'],
                      values['-THRESHOLD-'],
-                     values['-ADD-'],
-                     values['-SUBTRACT-']
+                     values['-STHRESHOLD-'],
+                     values['-ADITION-'],
+                     values['-SADITION-'],
+                     values['-SUBTRACTION-'],
+                     values['-SSUBTRACTION-'],
+                     values['-AVERAGEFILTER-']
                     )
+
         
 window.close()

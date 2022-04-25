@@ -19,6 +19,7 @@ import histograme
 import matplotlib as plt
 from GrayLevelSlicingA1 import A1
 from GrayLevelSlicingA2 import A2
+from medianFilter import median_filter
 
 # Colores
 FIRST_COLOR = f'#E7E7E7 on #041B2D'
@@ -99,7 +100,7 @@ down_col = sg.Frame('actions',[
 #filter column 
 filter_col = sg.Frame('action',[
     [sg.Column([
-        [sg.Checkbox('Average Filter', key = '-AVERAGEFILTER-', pad = (0,0) )],
+        [sg.Checkbox('Average Filter', key = '-AVERAGEFILTER-', pad = (0,0) ), sg.Checkbox('Median Filter', key = '-MEDIANFILTER-', pad = (0,0) )],
         [sg.Button('LOAD', key = '-LOAD1-' , pad = (0,0))]
     ])]
 ], visible = False, key = '-Filter-',pad = (20,0))
@@ -126,7 +127,7 @@ window = sg.Window('Window Title', layout, margins=(0, 0), resizable=False, retu
 # window.maximize()
 
 # update_image(original , window['-BYTES-'], window['-GRAY-'], window['-NEGATIVEIMAGE-'], window['-LOG-'], window['-INVERSELOG-'])
-def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,sthreshold,add,sadition,subtract,ssubtraction,averageFilter,gray1,gray2,min1,max1,min2,max2):
+def update_image(original ,bytes , gray , negativeimage , log , negativelog,threshold,sthreshold,add,sadition,subtract,ssubtraction,averageFilter,gray1,gray2,min1,max1,min2,max2,medianFilter):
     
 
     global image
@@ -140,12 +141,15 @@ def update_image(original ,bytes , gray , negativeimage , log , negativelog,thre
         Addition(image,int(sadition))
     if subtract and ssubtraction !='':
         Subtraction(image,ssubtraction)
-    if averageFilter :
-        Avg_filter(image)
     if gray1 and min1 and max1 :
         A1(image,int(min1),int(max1))
     if gray2 and min2 and max2 :
         A2(image,int(min2),int(max2))
+    if averageFilter :
+        Avg_filter(image)
+    if medianFilter :
+        median_filter(image)
+        
         
     
         
@@ -222,6 +226,7 @@ while True:
                      values['-max1-'],
                      values['-min2-'],
                      values['-max2-'],
+                     values['-MEDIANFILTER-']
                      
                     )
 

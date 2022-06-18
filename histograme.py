@@ -11,8 +11,10 @@ import collections
 
 
 def draw_histo_RGP(original1) :
-    fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=100)
-    original = cv2.imread(r'{original1}')
+    fig = matplotlib.figure.Figure(figsize=(5, 4), dpi=90)
+
+    original = cv2.imread(original1)
+
     img=original.tolist()
     red=[ img[r][j][0] for r in range(len(original)) for j in range(len(original[0])) ]
     red=sorted(red)
@@ -26,9 +28,7 @@ def draw_histo_RGP(original1) :
     countblue = collections.Counter(blue)
     plt.legend()
 
-    fig.add_subplot(111).plot(countred.keys(),countred.values(),'r',label='red')
-    return fig
-    # fig.add_subplot(111).plot(countgreen.keys(),countgreen.values(),'g',label = 'green')
-    # fig.add_subplot(111).plot(countblue.keys(),countblue.values(),'b',label = 'blue')
 
+    fig.add_subplot(111).plot(countred.keys(),countred.values(),'r', countgreen.keys(),countgreen.values(),'g',countblue.keys(),countblue.values(),'b')
+    return fig
 

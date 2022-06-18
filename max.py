@@ -2,9 +2,9 @@
 import numpy as np
 
 
-def median_filter(original,const):
+def max_filter(original):
     temp = np.zeros(original.shape).astype(np.uint8)
-    const = const//2
+    const = 3
     img = original.tolist()
     for i in range(len(img)):
         for j in range(len(img[0])):
@@ -23,5 +23,5 @@ def median_filter(original,const):
                 red.sort()
                 green.sort()
                 blue.sort()
-                temp[i][j] = red[len(red)//2] ,green[len(green)//2] ,blue[len(blue)//2]
+                temp[i][j] = np.max(red) ,np.max(green) , np.max(blue)
     return temp

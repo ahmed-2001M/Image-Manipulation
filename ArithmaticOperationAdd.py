@@ -1,8 +1,12 @@
 
 #function name :
+from ctypes import addressof
+import numpy as np
+
+
 def Addition(original,constant = 0):
 
-
+    temp = np.zeros(original.shape).astype(np.uint8)
     # the first for loob which catch the row:
     for i in range (len(original)):
         
@@ -14,16 +18,18 @@ def Addition(original,constant = 0):
             
             #Adding a constant :
             if ((255 - pixel[0])>constant)  :
-                pixel[0] =pixel[0]+ constant
+                red =pixel[0]+ constant
             else :
-                pixel[0]=255
+                red=255
             if ((255 - pixel[1])>constant)  :
-                pixel [1]=pixel[1]+ constant
+                green=pixel[1]+ constant
             else :
-                pixel[1]=255
+                green=255
             if ((255 - pixel[2])>constant)  :
-                pixel [2]=pixel[2]+ constant
+                blue=pixel[2]+ constant
             else :
-                pixel[2]=255
+                blue=255
 
-            original[i,j] = pixel
+            temp[i,j] = red , green , blue
+            
+    return temp

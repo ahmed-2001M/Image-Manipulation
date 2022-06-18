@@ -1,8 +1,10 @@
 
-#function name :
-# def ArithmaticOperationSubtract(original):
+import numpy as np
+
+
 def Subtraction(original,constant = 0):
 
+    temp = np.zeros(original.shape).astype(np.uint8)
     # the first for loob which catch the row:
     for i in range (len(original)):
         
@@ -14,18 +16,19 @@ def Subtraction(original,constant = 0):
             
             #Adding a constant :
             if pixel[0]>constant :
-                pixel[0] =pixel [0] - constant
+                red =pixel [0] - constant
             else :
-                pixel[0]=0
+                red=0
             
             if pixel[1]>constant :
-                pixel [1]=pixel [1] - constant
+                green=pixel [1] - constant
             else :
-                pixel[1]=0
+                green=0
             
             if pixel[2]>constant :
-                pixel[2] =pixel [2] - constant
+                blue =pixel [2] - constant
             else :
-                pixel[2]=0
+                blue=0
 
-            original[i,j] = pixel
+            temp[i,j] = red , green , blue
+    return temp

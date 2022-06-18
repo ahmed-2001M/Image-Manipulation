@@ -2,9 +2,12 @@
 
 
 #function name :
+import numpy as np
+
+
 def A2(original,min,max):
 
-
+    temp = np.zeros(original.shape).astype(np.uint8)
     # the first for loob which catch the row:
     for i in range (len(original)):
         
@@ -21,5 +24,6 @@ def A2(original,min,max):
                 pixel = 0, 0, 0
             
             
-            original[i,j]=pixel
+            temp[i,j]=pixel
+    return temp
 

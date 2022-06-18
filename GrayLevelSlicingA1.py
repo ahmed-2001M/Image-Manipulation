@@ -1,9 +1,9 @@
 
+import numpy as np
 
-#function name :
 def A1(original,min,max):
 
-
+    temp = np.zeros(original.shape).astype(np.uint8)
     for i in range (len(original)):
         
         # the second for loob which catch the column:
@@ -19,6 +19,6 @@ def A1(original,min,max):
             else :
                 pixel = 0
             
-            original[i,j]=pixel
-
+            temp[i,j]=pixel
+    return temp
 
